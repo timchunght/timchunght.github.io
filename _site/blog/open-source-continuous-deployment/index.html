@@ -1,0 +1,234 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>Benjamin Lerner</title>
+		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+		<meta name="description" content="" />
+		<meta name="keywords" content="" />
+		<link href="http://fonts.googleapis.com/css?family=Source+Sans+Pro:200,300,400,600" rel="stylesheet" type="text/css" />
+		<!--[if lte IE 8]><script src="js/html5shiv.js"></script><![endif]-->
+		<script src="/js/jquery.min.js"></script>
+		<script src="/js/skel.min.js"></script>
+		<script src="/js/skel-panels.min.js"></script>
+		<script src="/js/init.js"></script>
+		<noscript>
+			<link rel="stylesheet" href="/css/skel-noscript.css" />
+			<link rel="stylesheet" href="/css/style.css">
+			<link rel="stylesheet" href="/css/style-wide.css" />
+		</noscript>
+		<!--[if lte IE 9]><link rel="stylesheet" href="css/ie9.css" /><![endif]-->
+		<!--[if lte IE 8]><link rel="stylesheet" href="css/ie8.css" /><![endif]-->
+	</head>
+
+	<!-- Header -->
+			<div id="header" class="skel-panels-fixed">
+
+				<div class="top">
+
+					<!-- Logo -->
+						<div id="logo">
+							<span class="image avatar48"><img src="/images/avatar.jpg" alt="" /></span>
+							<h1 id="title">Benjamin Lerner</h1>
+							<span class="byline">Software Developer</span>
+						</div>
+
+					<!-- Nav -->
+						<nav id="nav">
+
+							<ul>
+								<li><a href="/" id="top-link" class="skel-panels-ignoreHref"><span class="fa fa-home">Home</span></a><li>
+								<li><a href="/#about" id="about-link" class="skel-panels-ignoreHref"><span class="fa fa-user">About Me</span></a></li>
+								<li><a href="/#portfolio" id="portfolio-link" class="skel-panels-ignoreHref"><span class="fa fa-th">Current Work</span></a></li>
+								<li><a href="/#contact" id="contact-link" class="skel-panels-ignoreHref"><span class="fa fa-envelope">Contact</span></a></li>
+								<li><a href="/blog" class="skel-panels-ignore"><span class="fa fa-terminal">Blog </span></a></li>
+								<li><a href="/KevinLawResume.pdf" target="_blank" class="skel-panels-ignore"><span class="fa fa-suitcase">Resume </span></a></li>
+							</ul>
+						</nav>
+
+				</div>
+
+				<div class="bottom">
+
+					<!-- Social Icons -->
+						<ul class="icons">
+							<li><a href="http://twitter.com/bensenberner" class="fa fa-twitter solo"><span>Twitter</span></a></li>
+							<li><a href="http://github.com/bensenberner" class="fa fa-github solo"><span>Github</span></a></li>
+							<!-- <li><a href="#" class="fa fa-facebook solo"><span>Facebook</span></a></li>
+
+							<li><a href="#" class="fa fa-dribbble solo"><span>Dribbble</span></a></li> -->
+							<li><a href="mailto:benlerner@gmail.com" class="fa fa-envelope solo"><span>Email</span></a></li>
+
+							<li><a href="https://www.linkedin.com/profile/view?id=282317805" class="fa fa-linkedin-square"><span></span></a></li>
+						</ul>
+
+				</div>
+
+			</div>
+
+
+<body>
+			<div id="main">
+	<div class="container">
+		<div class="post">
+		<a href="/blog"> <- Go back </a>
+         <div id="markdown-body">
+		  <header class="post-header">
+		    <h1 class="post-title">Open Source Continuous Deployment</h1>
+		    <p class="post-meta">
+		    	Dec 22, 2014 • Kevin L
+		    </p>
+		  </header>
+
+		  <article class="post-content">
+		    <blockquote>
+<p>&quot;Continuous Deployment is simple: just ship your code to customers as often as possible&quot; -Timothy Fitz</p>
+</blockquote>
+
+<h4>Going from code to deployment in the easiest and most pain-free way is the goal.</h4>
+
+<p>This mostly includes:</p>
+
+<ul>
+<li>Issue-Tracking System</li>
+<li>Version Control</li>
+<li>Continuous Integration</li>
+<li>Build and Unit Tests</li>
+<li>Deployment to Production</li>
+<li>Fail-Fast</li>
+</ul>
+
+<p>Services have been written to get the job done, but most are paid and hosted solutions. 
+Github Enterprise, Jira, Gitlab, Travis-CI,  etc...</p>
+
+<p>All great tools for their use, but sometimes it&#39; best to host the services yourself for no fees. The tools used here are all free and open source.</p>
+
+<hr>
+
+<h4>Step 1. Version Control &amp; Issue Tracking</h4>
+
+<p>Gogs is a Github clone written in Go. It has evolved into a respectable application. It features organizations, teams, issue tracking, repository hooks, and way more. Check it out. The project is currently hosted on Github.</p>
+
+<p><img src="/images/post_opensourceCI/2014-12-22-192016_979x846_scrot.png" alt="Gogs"></p>
+
+<p>Installation is easy,</p>
+
+<ul>
+<li><p>.1. Bring up a Linux Distro of your choice.</p></li>
+<li><p>.2. Install git (obviously)
+<a href="http://gogs.io/docs/installation/install_from_binary.html">wget the latest Binary</a></p></li>
+<li><p>.3. 
+<code>
+$ mv output.zip /srv/ \
+&amp;&amp; unzip /srv/output.zip
+</code></p></li>
+<li><p>.4. 
+<code>
+$ bash /srv/gogs/start.sh
+</code></p></li>
+<li><p>.5. Navigate to http://[IP-address]:3000</p></li>
+</ul>
+
+<p>And that&#39;s it. Setup a reverse proxy, ssl, and run it in a screen/tmux/nohup for better performance.</p>
+
+<hr>
+
+<h4>Step 2. Continuous Integration</h4>
+
+<p>Drone is a Continuous Integration service that utilizes Docker to build and test applications. Pull requests get tested before merging as well. Build status can be emailed, announced in IRC, or sent in other addon chat protocols</p>
+
+<p>It can OAuth logins with Github, Github Enterprise, Gitlab, Bitbucket, Gogs, and other services. So there is no need to register on the server, you authorize Drone access to your account and it will query for all your repositories.</p>
+
+<p><img src="/images/post_opensourceCI/2014-12-22-202249_1190x902_scrot.png" alt="Drone"></p>
+
+<p>Installation takes &lt; 5 minutes.</p>
+
+<ul>
+<li><p>.1. Bring up a Debian-based Linux Distro of your choice.</p></li>
+<li><p>.2. </p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">$ wget http://downloads.drone.io/master/drone.deb
+$ sudo dpkg -i drone.deb
+</code></pre></div></li>
+<li><p>.3. Add your gogs url to /etc/drone/drone.toml</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">[gogs] 
+url=&quot;http://[your-gogs-url]/&quot;
+</code></pre></div></li>
+<li><p>.4. Login to Drone</p></li>
+<li><p>.5. Have a drink</p></li>
+</ul>
+
+<p><img src="/images/post_opensourceCI/2014-12-22-202622_420x977_scrot.png" alt="Drone-Build"></p>
+
+<p>To enable a repository for CI on Drone, check enable in the repository list, then commit a .drone.yml file to your repository.</p>
+
+<hr>
+
+<h4>Step 3. Status &amp; Deployment</h4>
+
+<p>Drone-Wall<br>
+Wall displays are an easy way to see the project status. (Drone-Wall)[https://github.com/drone/drone-wall] is perfect for a TV on the wall.</p>
+
+<p>Installation can be done using <a href="https://www.docker.com/">Docker</a></p>
+
+<p><img src="/images/post_opensourceCI/2014-12-22-202249_1190x902_scrot.png" alt="Drone-wall"></p>
+
+<ul>
+<li><p>.1. Get your Drone API Key under &quot;Account Settings&quot; in Drone</p></li>
+<li><p>.2. Fill in the variables here</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">$ docker pull scottwferg/drone-wall
+$ docker run -d -p 3000:3000 -e API_SCHEME=HTTP -e API_DOMAIN=[DRONE_DOMAIN] \
+-e API_TOKEN=[API_KEY] -e API_PORT=80 scottwferg/drone-wall
+</code></pre></div></li>
+<li><p>.3. Have another drink.</p></li>
+</ul>
+
+<p><img src="/images/post_opensourceCI/Snapchat--5268095761595617025.jpg" alt="Drone-pic"></p>
+
+<hr>
+
+<p>Now how do we get this successfully built code to production?</p>
+
+<p>The .drone.yml file has the ability to trigger a deployment at the successful completion of your build.</p>
+
+<p>Add the Drone public ssh key provided in your Account settings to your production server.
+Add deploy parameters in the .drone.yml file to ssh in, clone the master branch, and restart services.
+More guidance can be found on the <a href="https://github.com/drone/drone/blob/v0.2.1/README.md#builds">Official documentation</a> and some <a href="http://docs.drone.io/ssh.html">basic scripting</a></p>
+
+<hr>
+
+<h4>Conclusion</h4>
+
+<p>Great!
+Now we have an open source, free, and automated environment that will version control, issue track, build, test, and deploy code. This is perfect continuous deployment. Code that breaks will not be deployed, so chances of failure go down greatly. And since we are continuously deploying, no reason to wait a week to push fixes if we do fail.</p>
+
+<p>The code to deployment pipeline should be very fast. In the event of a failure, fixes need to get deployed as quickly as possible. &quot;Set a fixed goal for the total commit-build-deploy process. At IMVU that goal was roughly 10 minutes, at Canvas that goal was 5 minutes.&quot; - Timothy Fitz
+Drone&#39;s build &amp; testing using Docker is extremely quick for my python-flask application.</p>
+
+<p>See how Etsy goes from code to deployment with <a href="https://codeascraft.com/2010/05/20/quantum-of-deployment/">Deployinator</a></p>
+
+<p>Inspired by:
+<a href="http://timothyfitz.com/2009/02/10/continuous-deployment-at-imvu-doing-the-impossible-fifty-times-a-day/">http://timothyfitz.com/2009/02/10/continuous-deployment-at-imvu-doing-the-impossible-fifty-times-a-day/</a>
+<a href="http://timothyfitz.com/2012/11/25/paths-to-continuous-deployment/">http://timothyfitz.com/2012/11/25/paths-to-continuous-deployment/</a></p>
+
+		  </article>
+            </div>
+		<a href="/blog"> <- Go back </a>
+		</div>
+	</div>
+</div>
+
+</body>
+
+<div id="footer">
+
+<!-- Copyright -->
+<div class="copyright">
+  <p>&copy; 2015 Ben Lerner. All rights reserved.</p>
+  <ul class="menu">
+    <li> Created using Jekyll | <a href="https://github.com/bensenberner/lerner.io/">Source</a></li>
+  </ul>
+</div>
+
+</div>
+
+
+</html>

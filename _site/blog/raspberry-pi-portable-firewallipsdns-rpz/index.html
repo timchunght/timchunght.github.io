@@ -1,0 +1,229 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>Benjamin Lerner</title>
+		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+		<meta name="description" content="" />
+		<meta name="keywords" content="" />
+		<link href="http://fonts.googleapis.com/css?family=Source+Sans+Pro:200,300,400,600" rel="stylesheet" type="text/css" />
+		<!--[if lte IE 8]><script src="js/html5shiv.js"></script><![endif]-->
+		<script src="/js/jquery.min.js"></script>
+		<script src="/js/skel.min.js"></script>
+		<script src="/js/skel-panels.min.js"></script>
+		<script src="/js/init.js"></script>
+		<noscript>
+			<link rel="stylesheet" href="/css/skel-noscript.css" />
+			<link rel="stylesheet" href="/css/style.css">
+			<link rel="stylesheet" href="/css/style-wide.css" />
+		</noscript>
+		<!--[if lte IE 9]><link rel="stylesheet" href="css/ie9.css" /><![endif]-->
+		<!--[if lte IE 8]><link rel="stylesheet" href="css/ie8.css" /><![endif]-->
+	</head>
+
+	<!-- Header -->
+			<div id="header" class="skel-panels-fixed">
+
+				<div class="top">
+
+					<!-- Logo -->
+						<div id="logo">
+							<span class="image avatar48"><img src="/images/avatar.jpg" alt="" /></span>
+							<h1 id="title">Benjamin Lerner</h1>
+							<span class="byline">Software Developer</span>
+						</div>
+
+					<!-- Nav -->
+						<nav id="nav">
+
+							<ul>
+								<li><a href="/" id="top-link" class="skel-panels-ignoreHref"><span class="fa fa-home">Home</span></a><li>
+								<li><a href="/#about" id="about-link" class="skel-panels-ignoreHref"><span class="fa fa-user">About Me</span></a></li>
+								<li><a href="/#portfolio" id="portfolio-link" class="skel-panels-ignoreHref"><span class="fa fa-th">Current Work</span></a></li>
+								<li><a href="/#contact" id="contact-link" class="skel-panels-ignoreHref"><span class="fa fa-envelope">Contact</span></a></li>
+								<li><a href="/blog" class="skel-panels-ignore"><span class="fa fa-terminal">Blog </span></a></li>
+								<li><a href="/KevinLawResume.pdf" target="_blank" class="skel-panels-ignore"><span class="fa fa-suitcase">Resume </span></a></li>
+							</ul>
+						</nav>
+
+				</div>
+
+				<div class="bottom">
+
+					<!-- Social Icons -->
+						<ul class="icons">
+							<li><a href="http://twitter.com/bensenberner" class="fa fa-twitter solo"><span>Twitter</span></a></li>
+							<li><a href="http://github.com/bensenberner" class="fa fa-github solo"><span>Github</span></a></li>
+							<!-- <li><a href="#" class="fa fa-facebook solo"><span>Facebook</span></a></li>
+
+							<li><a href="#" class="fa fa-dribbble solo"><span>Dribbble</span></a></li> -->
+							<li><a href="mailto:benlerner@gmail.com" class="fa fa-envelope solo"><span>Email</span></a></li>
+
+							<li><a href="https://www.linkedin.com/profile/view?id=282317805" class="fa fa-linkedin-square"><span></span></a></li>
+						</ul>
+
+				</div>
+
+			</div>
+
+
+<body>
+			<div id="main">
+	<div class="container">
+		<div class="post">
+		<a href="/blog"> <- Go back </a>
+         <div id="markdown-body">
+		  <header class="post-header">
+		    <h1 class="post-title">RaspberryPi Portable Firewall/IPS/DNS-RPZ</h1>
+		    <p class="post-meta">
+		    	Feb 6, 2015 • Kevin L
+		    </p>
+		  </header>
+
+		  <article class="post-content">
+		    <p>Connecting to unsecured networks can be a risk. You really don&#39;t know what could be running on the network. We can use the raspberry pi to act as a firewall for our laptops.</p>
+
+<p>For class, my group was assigned a project to create a portable firewall using a raspberry pi. The pi would connect via wifi to any hotspot (xfinitywifi, starbucks, etc...) and have the host computer attached be completely secure.</p>
+
+<p><img src="/images/post_raspifirewall/2015-02-06-014348_484x151_scrot.png" alt="Network Diagram"></p>
+
+<h2>Setup</h2>
+
+<h4>Prerequisites</h4>
+
+<ul>
+<li>1x raspberry pi</li>
+<li>1x 4gb sd card (raspbian installed)</li>
+<li>1x usb wifi adapter</li>
+</ul>
+
+<p>The default login for raspbian is pi:raspberry</p>
+
+<h3>Misc Configs</h3>
+<div class="highlight"><pre><code class="language-text" data-lang="text">pi@raspberrypi ~ $ sudo su -
+root@raspberrypi:~# apt-get update &amp;&amp; apt-get upgrade
+root@raspberrypi:~# apt-get install isc-dhcp-server bind9 snort wpasupplicant wireless-tools openssh-server vim tmux
+</code></pre></div>
+<p>Set a static IP address for eth0
+We can define the pi&#39;s ethernet address as 10.11.12.13/24 since that subnet is rarely used, and it&#39;s easier to remember!</p>
+
+<p>Edit <code>[/etc/networks/interfaces]</code></p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">auto lo
+iface lo inet loopback
+auto eth0
+iface eth0 inet static
+    address 10.11.12.13
+    netmask 255.255.255.0
+allow-hotplug wlan0
+iface wlan0 inet dhcp
+</code></pre></div>
+<p>SSH only on laptop
+Edit <code>[/etc/ssh/sshd_config]</code></p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">ListenAddress 10.11.12.13
+</code></pre></div>
+<p>We are going to need to give out ip addresses for the clients first!
+Edit <code>[/etc/dhcp/dhcpd.conf]</code></p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">default-lease-time 600;
+max-lease-time 7200;
+subnet 10.11.12.0 netmask 255.255.255.0 {
+      range 10.11.12.100 10.11.12.200;
+     option domain-name-servers 10.11.12.13;
+     option routers 10.11.12.13;
+}
+</code></pre></div>
+<h2>Router / Firewall - IPtables</h2>
+
+<p>The pi is going to act as the router for the laptop.
+Now let&#39;s route some traffic from wlan0 to eth0!</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">iptables -A FORWARD -i wlan0 -o eth0 -m state --state ESTABLISHED,RELATED -j ACCEPT
+iptables -A FORWARD -i eth0 -o wlan0 -j ACCEPT
+iptables -t nat -A POSTROUTING -o wlan0 -j MASQUERADE
+</code></pre></div>
+<p>That will route traffic from the wifi to the laptop, and block all attempts to connect to the actual pi.</p>
+
+<p>We will script this up later :)</p>
+
+<h2>DNS-RPZ - Bind9</h2>
+
+<p>DNS-RPZ allows us to maintain a blocklist for bad domains.</p>
+
+<p>We use malware-domains.com for this, since that site provides a decently up-to-date file in bind9 format. You can easily supply your own list here.</p>
+
+<p>Edit <code>[cron-update-dns.sh]</code></p>
+<div class="highlight"><pre><code class="language-sh" data-lang="sh"><span class="c">#!/bin/bash</span>
+wget http://malware-domains.com/files/malwaredomains.zones.zip
+unzip malwaredomains.zones.zip
+sed -e <span class="s1">&#39;s/\/etc\/namedb\/blockeddomain.hosts/\/etc\/bind\/rpz\/blocked.zone/g&#39;</span> malwaredomains.zones &gt; blocked-local.conf
+service bind9 restart
+rm malwaredomains.zones.zip
+rm malwaredomains.zones
+<span class="nb">echo</span> <span class="s2">&quot;Blocklist updated: $(date)&quot;</span> &gt;&gt; /var/log/blocklist
+</code></pre></div>
+<p>Edit <code>[/etc/bind/named.conf.options]</code></p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">recursion yes;
+forwarders {
+     8.8.8.8;
+     8.8.4.4;
+};
+</code></pre></div>
+<p>Edit <code>[/etc/bind/named.conf.local]</code></p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">include &quot;/etc/bind/blocked-local.conf&quot;;
+</code></pre></div>
+<p>Edit <code>[/etc/bind/rpz/blocked.zone]</code></p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">    $TTL 600        ; 10 minutes
+    @                       SOA     server.mydomain.com. root.mydomain.com. (
+                                   42         ; serial
+                                   900        ; refresh (15 minutes)
+                                   60         ; retry (1 minute)
+                                   604800     ; expire (1 week)
+                                   43200      ; minimum (12 hours)
+                                   )
+                           NS      server.mydomain.com.
+                           MX      1 server.mydomain.com.
+    $TTL 302400     ; 3 days 12 hours
+    @               IN      A       10.11.12.13
+    *               IN      A       10.11.12.13
+</code></pre></div>
+<p>Run that bash script once to kick it off, then add it to crontab if you want.</p>
+
+<h2>IPS - Snort</h2>
+
+<p>Good ol&#39; snort. You can pull in your own rules or use the default rules that come with the install. The default settings work decently, but can be tweaked.</p>
+
+<p>Edit <code>[/etc/snort/snort.debian.conf]</code></p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">DEBIAN_SNORT_INTERFACE=&quot;wlan0&quot; # Change interface to wlan0
+</code></pre></div>
+<p>Now we gotta connect to wifi. I wish webmin would supply a module for this, or an easier way for that matter.</p>
+
+<p>Basically, I just use</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">$ iwlist wlan0 scan | less
+$ iwconfig wlan0 essid &quot;xfinitywifi&quot; channel 11 mode Managed
+</code></pre></div>
+<p>Tie it all together
+Ssh login to the pi, connect to wifi using iwconfig commands. Then run this script!
+<script src="https://gist.github.com/04ce09ce803c40028037.js"> </script></p>
+
+<p><img src="/images/post_raspifirewall/20150206_012435.jpg" alt="Working Lab"></p>
+
+		  </article>
+            </div>
+		<a href="/blog"> <- Go back </a>
+		</div>
+	</div>
+</div>
+
+</body>
+
+<div id="footer">
+
+<!-- Copyright -->
+<div class="copyright">
+  <p>&copy; 2015 Ben Lerner. All rights reserved.</p>
+  <ul class="menu">
+    <li> Created using Jekyll | <a href="https://github.com/bensenberner/lerner.io/">Source</a></li>
+  </ul>
+</div>
+
+</div>
+
+
+</html>
